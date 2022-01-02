@@ -1,12 +1,18 @@
 let s:actions = get(g:, 'gitremote_actions', {
   \ 'delete': function('gitremotes#Delete'), 
   \ 'add copy': function('gitremotes#Add_Copy'),
+  \ 'add fork': function('gitremotes#Add_Fork'),
+  \ 'push': function('gitremotes#Push_To'),
   \ 'edit': function('gitremotes#Edit') })
 
 let s:keybinds = get(g:, 'gitremote_keybinds', { 
   \ 'ctrl-d': 'delete',
   \ 'ctrl-a': 'add copy',
+  \ 'ctrl-f': 'add fork',
+  \ 'ctrl-p': 'push',
   \ 'ctrl-e': 'edit' })
+
+let s:github_user = get(g:, 'gitremote_github_username', '')
 
 function! s:list_contains(list, item) abort
   return index(a:list, a:item) >= 0
@@ -43,20 +49,51 @@ function! s:remote_exists(remote_name) abort
   return index(l:remotes_list, a:remote_name) >= 0
 endfunction
 
-function! gitremotes#Add_Copy(lines) abort
-  if len(a:lines) != 1
-    throw "Can only add copy of one remote"
-  endif
-  let l:remote = gitremotes#Split_Remote_Line(a:lines[0])
-  let l:new_name = input('Name> ', l:remote[0])
-  if l:new_name == l:remote[0]
+function! s:get_new_remote_name(default_name) abort
+  let l:new_name = input('Name> ', a:default_name)
+  if l:new_name == a:default_name
     throw "You must specify a new name for the remote. Use edit to change only the url."
   endif
   if s:remote_exists(l:new_name)
     throw "A remote named " . l:new_name . " already exists"
   endif
-  let l:url = input('URL> ', l:remote[1])
-  execute ':GRemoteAdd ' . l:new_name . ' ' . l:url
+  return l:new_name
+endfunction
+
+function! gitremotes#Add_Copy(lines) abort
+  if len(a:lines) != 1
+    throw "Can only add copy of one remote"
+  endif
+  let l:remote = gitremotes#Split_Remote_Line(a:lines[0])
+  let l:new_name = s:get_new_remote_name(l:remote[0])
+  let l:new_url = input('URL> ', l:remote[1])
+  execute ':GRemoteAdd ' . l:new_name . ' ' . l:new_url
+endfunction
+
+function! s:replace_username_in_url(url, new_username) abort
+  " SSH address, e.g. git@github.com:TamaMcGlinn/vim-gitremotes
+  let l:new_url = substitute(a:url, '^\(git@[^:]*:\)[^/]*', '\1' . a:new_username, '')
+  " HTTP(S) address, e.g. https://github.com/TamaMcGlinn/vim-gitremotes.git
+  let l:new_url = substitute(l:new_url, '^\(https\?://[^/]*/\)[^/]*', '\1' . a:new_username, '')
+  return l:new_url
+endfunction
+
+function! gitremotes#Add_Fork(lines) abort
+  if len(a:lines) != 1
+    throw "Can only add fork of one remote"
+  endif
+  let l:remote = gitremotes#Split_Remote_Line(a:lines[0])
+  let l:new_name = s:get_new_remote_name(l:remote[0])
+  let l:new_github_user = input('Github user> ', s:github_user)
+  let l:new_url = s:replace_username_in_url(l:remote[1], l:new_github_user)
+  execute ':GRemoteAdd ' . l:new_name . ' ' . l:new_url
+endfunction
+
+function! gitremotes#Push_To(lines) abort
+  for idx in range(len(a:lines))
+      let l:remote_name = gitremotes#Split_Remote_Line(a:lines[l:idx])[0]
+      call s:checked_shell(FugitiveShellCommand() . ' push ' . l:remote_name)
+  endfor
 endfunction
 
 function! s:remote_sink(lines) abort
@@ -91,6 +128,8 @@ function! gitremotes#Edit(lines) abort
     throw "Can only edit one remote"
   endif
   let l:remote = gitremotes#Split_Remote_Line(a:lines[0])
+  " Note: not using s:get_new_remote_name, because this name may be the same
+  " as the current one
   let l:new_name = input('Name> ', l:remote[0])
   let l:url = input('URL> ', l:remote[1])
   execute ':GRemoteEdit ' . l:remote[0] . ' ' l:new_name . ' ' . l:url
