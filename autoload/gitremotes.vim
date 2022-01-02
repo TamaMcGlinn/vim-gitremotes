@@ -12,7 +12,7 @@ let s:keybinds = get(g:, 'gitremote_keybinds', {
   \ 'ctrl-p': 'push',
   \ 'ctrl-e': 'edit' })
 
-let s:github_user = get(g:, 'gitremote_github_username', '')
+let s:username = get(g:, 'gitremote_username', '')
 
 function! s:list_contains(list, item) abort
   return index(a:list, a:item) >= 0
@@ -84,8 +84,8 @@ function! gitremotes#Add_Fork(lines) abort
   endif
   let l:remote = gitremotes#Split_Remote_Line(a:lines[0])
   let l:new_name = s:get_new_remote_name(l:remote[0])
-  let l:new_github_user = input('Github user> ', s:github_user)
-  let l:new_url = s:replace_username_in_url(l:remote[1], l:new_github_user)
+  let l:new_user = input('User> ', s:username)
+  let l:new_url = s:replace_username_in_url(l:remote[1], l:new_user)
   execute ':GRemoteAdd ' . l:new_name . ' ' . l:new_url
 endfunction
 

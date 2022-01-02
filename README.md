@@ -20,7 +20,7 @@ This plugin exposes commands for you to use or bind as you see fit:
 * `GRemotesList` -- Opens an fzf window with a list of all git remotes. This list gives the users a couple of options to manage their stashes
   * `ctrl-d` -- Deletes the remote(s). You can mark multiple remotes for deletion with the `tab` key.
   * `ctrl-a` -- Adds a copy of the remote for you to edit.
-  * `ctrl-f` -- Add a fork (specify only the changed username in a github url, which default to `g:gitremote_github_username`)
+  * `ctrl-f` -- Add a fork (specify new username, defaults to `g:gitremote_username`)
   * `ctrl-p` -- Push to this remote.
   * `ctrl-e` -- Edit the remote(s). Prompts for optional new name, and optional new url.
   * `ctrl-s` -- TODO implement this one. Toggle remote url between SSH and HTTPS url.
@@ -37,7 +37,7 @@ nnoremap <leader>gra :GRemoteAdd
 nnoremap <leader>grr :GRemoteList<CR>
 
 " Set my github username, so that when I cntrl-f to fork I don't have to type it in
-let g:gitremote_github_username = 'TamaMcGlinn'
+let g:gitremote_username = 'TamaMcGlinn'
 ```
 
 ### Advanced configuration
