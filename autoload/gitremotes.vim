@@ -154,7 +154,7 @@ function! gitremotes#Edit(lines) abort
   " as the current one
   let l:new_name = input('Name> ', l:remote[0])
   let l:url = input('URL> ', l:remote[1])
-  execute ':GRemoteEdit ' . l:remote[0] . ' ' l:new_name . ' ' . l:url
+  call gitremotes#edit_remote(l:remote[0], l:new_name, l:url)
 endfunction
 
 function! gitremotes#edit_remote(name, new_name, new_url) abort
