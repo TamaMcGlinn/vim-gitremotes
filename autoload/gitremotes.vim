@@ -6,6 +6,7 @@ let s:actions = get(g:, 'gitremote_actions', {
   \ 'force push': function('gitremotes#Force_Push_To'),
   \ 'fetch': function('gitremotes#Fetch_From'),
   \ 'pull': function('gitremotes#Pull_From'),
+  \ 'swap ssh/https': function('gitremotes#Swap_SSH_HTTPS'),
   \ 'edit': function('gitremotes#Edit') })
 
 let s:keybinds = get(g:, 'gitremote_keybinds', { 
@@ -16,6 +17,7 @@ let s:keybinds = get(g:, 'gitremote_keybinds', {
   \ 'ctrl-i': 'force push',
   \ 'ctrl-j': 'fetch',
   \ 'ctrl-u': 'pull',
+  \ 'ctrl-s': 'swap ssh/https',
   \ 'ctrl-e': 'edit' })
 
 let s:username = get(g:, 'gitremote_username', '')
@@ -116,6 +118,24 @@ endfunction
 
 function! gitremotes#Pull_From(lines) abort
   call s:remote_command(a:lines, ' pull ')
+endfunction
+
+function! gitremotes#Swap_SSH_HTTPS(lines) abort
+  for idx in range(len(a:lines))
+    let l:remote = gitremotes#Split_Remote_Line(a:lines[l:idx])
+    let l:remote_name = l:remote[0]
+    let l:remote_url = l:remote[1]
+    if l:remote_url =~# '^git@'
+      " SSH address, e.g. git@github.com:TamaMcGlinn/vim-gitremotes
+      let l:new_url = substitute(l:remote_url, '^git@\([^:]*\):\(.*\)', 'https://\1/\2', '')
+    elseif l:remote_url =~# '^https\?://'
+      " HTTP(S) address, e.g. https://github.com/TamaMcGlinn/vim-gitremotes.git
+      let l:new_url = substitute(l:remote_url, '^https\?://\([^/]*\)/\(.*\)', 'git@\1:\2', '')
+    else
+      throw "Couldn't recognise url " . l:remote_url . " as either SSH or HTTPS."
+    endif
+    call gitremotes#edit_remote(l:remote_name, l:remote_name, l:new_url)
+  endfor
 endfunction
 
 function! s:remote_sink(lines) abort
