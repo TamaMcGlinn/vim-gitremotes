@@ -3,13 +3,19 @@ let s:actions = get(g:, 'gitremote_actions', {
   \ 'add copy': function('gitremotes#Add_Copy'),
   \ 'add fork': function('gitremotes#Add_Fork'),
   \ 'push': function('gitremotes#Push_To'),
+  \ 'force push': function('gitremotes#Force_Push_To'),
+  \ 'fetch': function('gitremotes#Fetch_From'),
+  \ 'pull': function('gitremotes#Pull_From'),
   \ 'edit': function('gitremotes#Edit') })
 
 let s:keybinds = get(g:, 'gitremote_keybinds', { 
   \ 'ctrl-d': 'delete',
   \ 'ctrl-a': 'add copy',
   \ 'ctrl-f': 'add fork',
-  \ 'ctrl-p': 'push',
+  \ 'ctrl-k': 'push',
+  \ 'ctrl-i': 'force push',
+  \ 'ctrl-j': 'fetch',
+  \ 'ctrl-u': 'pull',
   \ 'ctrl-e': 'edit' })
 
 let s:username = get(g:, 'gitremote_username', '')
@@ -89,11 +95,27 @@ function! gitremotes#Add_Fork(lines) abort
   execute ':GRemoteAdd ' . l:new_name . ' ' . l:new_url
 endfunction
 
-function! gitremotes#Push_To(lines) abort
+function! s:remote_command(lines, command)
   for idx in range(len(a:lines))
-      let l:remote_name = gitremotes#Split_Remote_Line(a:lines[l:idx])[0]
-      call s:checked_shell(FugitiveShellCommand() . ' push ' . l:remote_name)
+    let l:remote_name = gitremotes#Split_Remote_Line(a:lines[l:idx])[0]
+    call s:checked_shell(FugitiveShellCommand() . a:command . l:remote_name)
   endfor
+endfunction
+
+function! gitremotes#Push_To(lines) abort
+  call s:remote_command(a:lines, ' push ')
+endfunction
+
+function! gitremotes#Force_Push_To(lines) abort
+  call s:remote_command(a:lines, ' push --force-with-lease ')
+endfunction
+
+function! gitremotes#Fetch_From(lines) abort
+  call s:remote_command(a:lines, ' fetch ')
+endfunction
+
+function! gitremotes#Pull_From(lines) abort
+  call s:remote_command(a:lines, ' pull ')
 endfunction
 
 function! s:remote_sink(lines) abort
