@@ -204,5 +204,5 @@ function! gitremotes#list_remotes(...) abort
 endfunction
 
 function! s:get_keybinding_description()
-    return join(map(items(s:keybinds), 'toupper(v:val[0]) . " to " . v:val[1]'), ', ')
+    return join(map(items(s:keybinds), 'toupper(v:val[0]) . ": " . v:val[1]'), ', ')
 endfunction
