@@ -92,7 +92,14 @@ function! gitremotes#Add_Fork(lines) abort
   endif
   let l:remote = gitremotes#Split_Remote_Line(a:lines[0])
   let l:new_name = s:get_new_remote_name(l:remote[0])
-  let l:new_user = input('User> ', s:username)
+  " normally, the name we pick for the remote equals the username
+  " so we give that as the default when prompting the user
+  let l:default_username = l:new_name
+  if count(['origin', 'fork', 'upstream', 'downstream'], l:new_name) > 0
+    " but when adding some common names we probably want to use our own github username
+    let l:default_username = g:username
+  endif
+  let l:new_user = input('User> ', l:default_username)
   let l:new_url = s:replace_username_in_url(l:remote[1], l:new_user)
   execute ':GRemoteAdd ' . l:new_name . ' ' . l:new_url
 endfunction
