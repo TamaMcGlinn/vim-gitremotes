@@ -95,9 +95,9 @@ function! gitremotes#Add_Fork(lines) abort
   " normally, the name we pick for the remote equals the username
   " so we give that as the default when prompting the user
   let l:default_username = l:new_name
-  if count(['origin', 'fork', 'upstream', 'downstream'], l:new_name) > 0
+  if exists("g:gitremote_username") && count(['origin', 'fork', 'upstream', 'downstream'], l:new_name) > 0
     " but when adding some common names we probably want to use our own github username
-    let l:default_username = g:username
+    let l:default_username = g:gitremote_username
   endif
   let l:new_user = input('User> ', l:default_username)
   let l:new_url = s:replace_username_in_url(l:remote[1], l:new_user)
